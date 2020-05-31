@@ -1,0 +1,139 @@
+#UPADATING SYSTEM
+apt update
+apt upgrade
+
+#INSTALLING APACHE
+sudo apt install apache2 apache2-utils
+systemctl status apache2
+sudo systemctl enable apache2
+sudo nano /etc/apache2/mods-enabled/dir.conf
+
+
+#ADDING USER TO GROUP
+sudo adduser debian www-data
+
+#FILE AND FOLDER PERMISSION
+grep ^www-data /etc/group
+sudo chgrp www-data /var/www -R
+sudo chmod g+rwx /var/www -R
+sudo apt install curl
+sudo chown -R www-data:www-data  /var/www/ -R
+sudo chown -R www-data:www-data  /etc/apache2/sites-available -R
+sudo chmod g+rwx /etc/apache2/sites-available -R
+sudo chmod -R 755 /var/www/html
+
+
+#MYSQL
+sudo apt install mariadb-server mariadb-client
+sudo apt install mysql-server mysql-client
+systemctl status mariadb
+sudo systemctl enable mariadb 
+sudo mysql_secure_installation
+sudo mariadb -u root
+
+
+
+#PHP 7.4
+sudo apt install ca-certificates apt-transport-https 
+wget -q https://packages.sury.org/php/apt.gpg -O- | sudo apt-key add -
+echo "deb https://packages.sury.org/php/ stretch main" | sudo tee /etc/apt/sources.list.d/php.list
+sudo apt update
+sudo apt install php7.4-cli php7.4-common php7.4-curl php7.4-mbstring php7.4-mysql php7.4-xml
+a2enmod php7.4
+
+
+
+#CHECK PHPINFO
+sudo mkdir /var/www/html/hoobohoo.com
+sudo chmod -R 755 /var/www/html/hoobohoo.com/
+cd  /var/www/html/hoobohoo.com
+sudo vi phpinfo.php
+<? phpinfo(); ?>
+
+
+#FIREWALL SYSTEM
+sudo apt install ufw
+sudo nano /etc/default/ufw
+sudo ufw allow ssh
+sudo ufw allow 22
+sudo ufw enable
+sudo ufw allow http
+sudo ufw allow https
+sudo ufw status verbose
+sudo ufw allow 'WWW'
+
+
+
+
+
+
+
+#SETTING UP VIRTUAL HOST
+cp /etc/php/7.4/apache2/php.ini /var/www/html/hoobohoo.com/
+sudo vi /etc/apache2/sites-available/hoobohoo.com.conf
+
+<VirtualHost *:80>
+    ServerAdmin admin@hoobohoo.com
+    ServerName hoobohoo.com
+    ServerAlias www.hoobohoo.com
+    DocumentRoot /var/www/html/hoobohoo.com/
+    PHPINIDir /var/www/html/hoobohoo.com/
+    <Directory /var/www/html/hoobohoo.com>
+        Options Indexes FollowSymLinks
+        AllowOverride All
+        Require all granted
+    </Directory>
+    ErrorLog ${APACHE_LOG_DIR}/error.log
+    CustomLog ${APACHE_LOG_DIR}/access.log combined
+</VirtualHost>
+
+
+sudo a2ensite hoobohoo.com.conf
+sudo a2dissite 000-default.conf
+sudo apache2ctl configtest
+sudo systemctl restart apache2
+
+
+
+
+#LETS ENCRYPT CERTBOT FOR SSL
+sudo nano /etc/apt/sources.list
+
+deb http://ftp.debian.org/debian stretch-backports main
+
+sudo apt update
+sudo apt install python-certbot-apache -t stretch-backports
+sudo ufw allow 'WWW Full'
+sudo ufw delete allow 'WWW'
+sudo ufw status
+
+#NEW DOMAIN ADD SSL
+sudo certbot --apache -d hoobohoo.com -d www.hoobohoo.com
+
+sudo su
+apt update && apt install --only-upgrade python3-acme
+sudo certbot renew --dry-run
+
+
+#INSTALLING PHPMYADMIN
+sudo apt install phpmyadmin php-mbstring php-gettext
+sudo phpenmod mbstring
+sudo systemctl restart apache2
+CREATE USER 'anan'@'localhost' IDENTIFIED BY 'anan34523452';
+GRANT ALL PRIVILEGES ON *.* TO 'anan'@'localhost' WITH GRANT OPTION;
+exit
+sudo vi /etc/apache2/apache2.conf
+
+
+#ADDING WORDPRESS & OVERCOMING PHP LIMITS 
+sudo apt install unzip
+cd /var/www/html/hoobohoo.com/
+sudo unzip /var/www/html/hoobohoo.com/wordpress.zip
+sudo vi .htaccess
+
+php_value upload_max_filesize 128M
+php_value post_max_size 64M
+php_value max_execution_time 20000
+php_value max_input_time 30000
+
+
