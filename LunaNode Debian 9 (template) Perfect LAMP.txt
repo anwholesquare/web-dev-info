@@ -11,16 +11,21 @@ sudo nano /etc/apache2/mods-enabled/dir.conf
 
 #ADDING USER TO GROUP
 sudo adduser debian www-data
+sudo apt-get remove --purge unscd
+
+#ADDING NEW USER TO THE GROUP
+sudo useradd -d /var/www anan -g www-data
+sudo passwd anan
+sudo service ssh restart
 
 #FILE AND FOLDER PERMISSION
 grep ^www-data /etc/group
 sudo chgrp www-data /var/www -R
 sudo chmod g+rwx /var/www -R
 sudo apt install curl
-sudo chown -R www-data:www-data  /var/www/ -R
-sudo chown -R www-data:www-data  /etc/apache2/sites-available -R
+sudo chown -R www-data  /etc/apache2/sites-available -R
 sudo chmod g+rwx /etc/apache2/sites-available -R
-sudo chmod -R 755 /var/www/html
+sudo chmod -R 775 /var/www/ -R
 
 
 #MYSQL
